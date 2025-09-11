@@ -1,0 +1,1138 @@
+/* リセットCSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 基本スタイル */
+body {
+    font-family: 'Noto Sans JP', sans-serif;
+    line-height: 1.6;
+    color: black;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ヘッダー */
+.header {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.brand-name {
+    font-family: 'Jost', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    position: relative;
+    padding: 0.5rem 1rem;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #FFD442;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 50%;
+    background-color: #FFD442;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 80%;
+}
+
+/* ハンバーガーメニュー */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    margin: 3px 0;
+    transition: 0.3s;
+}
+
+/* ヒーローセクション */
+.hero {
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+    padding: 80px 2rem 2rem;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 600px;
+    margin-right: 2rem;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1rem;
+    font-family: 'Jost', sans-serif;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    color: #FFD442;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    font-style: italic;
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.8;
+}
+
+.hero-image {
+    flex: 1;
+}
+
+.hero-img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* セクションタイトル */
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 4px;
+    background: #FFD442;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* プロフィールセクション */
+.profile {
+    padding: 100px 0;
+    background: #fff;
+}
+
+.profile-content {
+    display: flex;
+    justify-content: center;
+}
+
+.profile-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 3rem;
+    max-width: 1800px;
+    width: 100%;
+}
+
+.profile-image {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.profile-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #FFD442;
+}
+
+.profile-name {
+    text-align: center;
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.detail-item h4 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.detail-item h4 i {
+    color: #FFD442;
+}
+
+.detail-description {
+    color: #666;
+    margin: 1rem 0;
+}
+
+.hometown-image {
+     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 5rem;
+    margin-top: 1rem;
+    justify-items: center;
+}
+
+.detail-img {
+    width: 100%;
+    height: 250px;
+    max-width: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* 好きなことセクション */
+.interests {
+    padding: 100px 0;
+    background: #faf8f8;
+}
+
+/* カード本体に3Dの奥行きを付与 */
+.interest-card {
+  perspective: 1000px;
+  position: relative; 
+  height: 360px;  
+  width: 360px;   
+}
+
+/* 中身を回転させるラッパー */
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;   
+  transition: transform 0.6s ease; 
+}
+
+/* 反転状態（.flipped が付く）で裏面が表に */
+.interest-card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+/* 表面 / 裏面（共通） */
+.card-front,
+.card-back {
+  cursor: pointer;
+  position: absolute;
+  inset: 0;                    
+  backface-visibility: hidden;  
+  border-radius: 15px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;    
+  padding: 1.25rem;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1); 
+}
+
+/* 裏面は180度回しておく */
+.card-back {
+  transform: rotateY(180deg);
+  background: white ;
+  color: #333;
+}
+
+.interest-card:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15); 
+}
+
+.interest-icon {
+    width: 80px;
+    height: 80px;
+    background: #FFD442;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: #333;
+}
+.interests-grid {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;  /* 横方向の中央寄せ */
+  align-items: stretch;
+  flex-wrap: wrap;          /* 画面が狭い時は折り返し */
+}
+
+/* 画面が十分広ければ折り返さず3枚を一列に */
+@media (min-width: 1024px) {
+  .interests-grid {
+    flex-wrap: nowrap;
+  }
+}
+
+/* カード幅の最適化（任意：小画面でのはみ出し防止） */
+.interest-card {
+  width: 360px;
+  max-width: 92vw; /* スマホでの横はみ出しを抑える */
+  height: 360px;
+}
+
+.interest-card h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.interest-card p {
+    color: #666;
+    line-height: 1.7;
+}
+
+.interest-card .card-back img,
+.interest-card .card-back .interests-img {
+  width: 100%;
+  max-width: 260px;       
+  aspect-ratio: 1 / 1;   
+  height: auto;          
+  object-fit: cover;     
+  border-radius: 12px;
+  display: block;
+  margin: 0 auto 0.75rem; 
+}
+
+/* 趣味セクション */
+.hobbies {
+    padding: 100px 0;
+    background: #fff;
+}
+
+.hobby-item {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.hobby-title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    width: 100%;  
+    padding: 1rem; 
+}
+
+.hobby-title i {
+    color: #FFD442;
+    margin-right: 1rem;
+}
+
+.expand-btn {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.3s ease;
+    font-size: 1rem;
+}
+
+.expand-btn:hover {
+    color: #FFD442;
+}
+
+.expand-btn i {
+    transition: transform 0.3s ease;
+}
+
+.expand-btn.active i {
+    transform: rotate(180deg);
+}
+
+.expandable-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.expandable-content.active {
+    max-height: 1000px;
+}
+
+.hobby-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.hobby-image {
+    text-align: center;
+}
+
+.image-caption {
+    margin-top: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.travel-countries {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.country-item {
+    text-align: center;
+}
+
+.country-img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+}
+
+.country-item p {
+    font-weight: 500;
+    color: #333;
+}
+
+/* その他の情報セクション */
+.additional-info {
+    padding: 100px 0;
+    background: #f8f9fa;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.info-card {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.info-card h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.info-card h3 i {
+    color: #FFD442;
+}
+
+.mbti-type {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #FFD442;
+    margin-bottom: 1rem;
+}
+
+.secret-text {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #FFD442;
+    margin-bottom: 1rem;
+}
+
+.mbti-link {
+  text-decoration: none;       
+  color: inherit;               
+  display: inline-block;        
+  cursor: pointer;              
+  transition: transform 0.2s ease, text-shadow 0.2s ease;
+}
+
+.mbti-link:hover {
+  transform: translateY(-2px);   
+  text-shadow: 0 6px 14px rgba(0, 0, 0, 0.18); 
+}
+
+.mbti-link:active {
+  transform: translateY(0);      
+}
+
+/* 強みページのスタイル */
+.strengths {
+    padding: 100px 0;
+    background: #fff;
+}
+
+.strengths-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 3rem;
+}
+
+.strength-card {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.strength-card:hover {
+    transform: translateY(-5px);
+}
+
+.strength-icon {
+    width: 100px;
+    height: 100px;
+    background: #FFD442;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 2.5rem;
+    color: #333;
+}
+
+.strength-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.strength-description {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.strength-expand {
+    background: #333;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.strength-expand:hover {
+    background: #FFD442;
+    color: #333;
+}
+
+.strength-details {
+    text-align: left;
+}
+
+.value-items {
+    display: grid;
+    gap: 1rem;
+}
+
+.value-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.value-item i {
+    color: #FFD442;
+    font-size: 1.2rem;
+}
+
+/* 例示セクション */
+.examples {
+    padding: 100px 0;
+    background: #f8f9fa;
+}
+
+.examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.example-card {
+    background: #fff;
+    padding: 2.5rem 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.example-card:hover {
+    transform: translateY(-10px);
+}
+
+.example-icon {
+    width: 80px;
+    height: 80px;
+    background: #FFD442;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: #333;
+}
+
+/* 価値観セクション */
+.values {
+    padding: 100px 0;
+    background: #fff;
+}
+
+.values-content {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+}
+
+.values-image {
+    flex: 1;
+}
+
+.values-img {
+    width: 100%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.values-text {
+    flex: 1;
+}
+
+.value-philosophy {
+    margin-bottom: 3rem;
+}
+
+.value-philosophy h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.value-philosophy h3 i {
+    color: #FFD442;
+}
+
+/* 目標ページのスタイル */
+.main-goal {
+    padding: 100px 0;
+    background: #fff;
+}
+
+.goal-card {
+    background: linear-gradient(135deg, #FFD442 0%, #ffb347 100%);
+    border-radius: 20px;
+    padding: 4rem 3rem;
+    text-align: center;
+    color: #333;
+    box-shadow: 0 15px 40px rgba(255, 212, 66, 0.3);
+}
+
+.goal-icon {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    font-size: 3rem;
+    color: gold;
+}
+
+.goal-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+.goal-description {
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.goal-emphasis {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* ステップセクション */
+.steps {
+    padding: 100px 0;
+    background: #f8f9fa;
+}
+
+.steps-timeline {
+    display: grid;
+    gap: 3rem;
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.step-number {
+    width: 60px;
+    height: 60px;
+    background: #FFD442;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.step-content h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.step-content p {
+    color: #666;
+    line-height: 1.7;
+}
+
+/* 成長分野セクション */
+.growth-areas {
+    padding: 100px 0;
+    background: #fff;
+}
+
+.areas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.area-card {
+    background: #f8f9fa;
+    padding: 2.5rem 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.area-card:hover {
+    transform: translateY(-10px);
+    background: #FFD442;
+}
+
+.area-icon {
+    width: 80px;
+    height: 80px;
+    background: #FFD442;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.area-card:hover .area-icon {
+    background: #fff;
+}
+
+/* モチベーションセクション */
+.motivation {
+    padding: 100px 0;
+    background: #f8f9fa;
+}
+
+.motivation-content {
+    display: flex;
+    align-items: center;
+    gap: 4rem;
+}
+
+.motivation-text {
+    flex: 1;
+}
+
+.motivation-item {
+    margin-bottom: 3rem;
+}
+
+.motivation-item h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.motivation-item h3 i {
+    color: #FFD442;
+}
+
+.motivation-item p {
+    color: #666;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.motivation-image {
+    flex: 1;
+}
+
+.motivation-img {
+    width: 100%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* 行動宣言セクション */
+.commitment {
+    padding: 100px 0;
+    background: #333;
+    color: #fff;
+}
+
+.commitment-card {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.commitment-card h2 {
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: #FFD442;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.commitment-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.commitment-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 212, 66, 0.1);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 5px solid #FFD442;
+    font-size: 1.1rem;
+}
+
+.commitment-item i {
+    color: #FFD442;
+    font-size: 1.2rem;
+}
+
+/* フッター */
+.footer {
+    background: #333;
+    color: #fff;
+    padding: 60px 0 20px;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #FFD442;
+}
+
+.footer-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #FFD442;
+}
+
+.footer-description {
+    color: #ccc;
+    margin-bottom: 1.5rem;
+}
+
+.footer-links {
+    list-style: none;
+}
+
+.footer-links li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+    color: #ccc;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #FFD442;
+}
+
+.footer-bottom {
+    border-top: 1px solid #555;
+    padding-top: 2rem;
+    text-align: center;
+    color: #ccc;
+}
+
+/* モバイル対応 */
+@media screen and (max-width: 768px) {
+    .nav-menu {
+        position: fixed;
+        left: -100%;
+        top: 70px;
+        flex-direction: column;
+        background-color: #fff;
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+        padding: 2rem 0;
+    }
+
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .nav-item {
+        margin: 1rem 0;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 100px 1rem 2rem;
+    }
+
+    .hero-content {
+        margin-right: 0;
+        margin-bottom: 2rem;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .profile-card {
+        padding: 2rem;
+    }
+
+    .profile-img {
+        width: 150px;
+        height: 150px;
+    }
+
+    .strengths-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .strength-card {
+        padding: 2rem;
+    }
+
+    .values-content,
+    .motivation-content {
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .step-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .hobby-images,
+    .travel-countries {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .areas-grid,
+    .examples-grid,
+    .interests-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+    }
+
+    .goal-card {
+        padding: 3rem 2rem;
+    }
+
+    .goal-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+
+    .goal-title {
+        font-size: 2rem;
+    }
+
+    .strength-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+}
+
+/* スムーススクロール */
+html {
+    scroll-behavior: smooth;
+}

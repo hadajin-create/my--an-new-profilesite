@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波田 迅 私について</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <h2 class="brand-name">自己紹介</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="index.html" class="nav-link active">私について</a></li>
+                <li class="nav-item"><a href="strengths.html" class="nav-link">私の強み</a></li>
+                <li class="nav-item"><a href="goals.html" class="nav-link">今後の目標</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main>
+        <!-- ヒーローセクション -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">はじめまして</h1>
+                <p class="hero-subtitle">Nice to meet you</p>
+            </div>
+            <div class="hero-image">
+                <img src="images/mountain-9644976_1280.jpg" alt="波田 迅" class="hero-img" loading="eager">
+            </div>
+        </section>
+
+        <!-- プロフィールセクション -->
+        <section class="profile">
+            <div class="container">
+                <h2 class="section-title">プロフィール</h2>
+                <div class="profile-content">
+                    <div class="profile-card">
+                        <div class="profile-image">
+                            <img src="images/images:ore.jpg" alt="波田 迅の写真" class="profile-img">
+                        </div>
+                        <div class="profile-info">
+                            <h3 class="profile-name">波田 迅（はだ じん）</h3>
+                            <div class="profile-detail">
+                                <div class="detail-item">
+                                    <h4><i class="fas fa-map-marker-alt"></i> 出身地</h4>
+                                    <p>山口県</p>
+                                    <p class="detail-description">錦帯橋という日本三名橋の一つが近くにある町で育ちました。岩国寿司という郷土料理もあり歴史や伝統が感じられる町です。</p>
+                                    <div class="hometown-image">
+                                        <img src="images/images:kintaikyo-autumn.jpg" alt="錦帯橋" class="detail-img">
+                                        <img src="images/public.avif" alt="錦帯橋" class="detail-img">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 好きなことセクション -->
+        <section class="interests">
+            <div class="container">
+                <h2 class="section-title">好きなこと</h2>
+                <div class="interests-grid">
+                    <!-- お笑い -->
+                    <div class="interest-card" tabindex="0" aria-pressed="false">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                 <div class="interest-icon"><i class="fas fa-laugh"></i></div>
+                                 <h3>お笑い</h3>
+                                 <p>好きな芸人は、、</p>
+                             </div>
+                             <div class="card-back">
+                                <img src="images/9866d5ad895ea652466d56050daf67052e5a34e1.jpg" alt="中川家" class="interests-img" loading="lazy">
+                                <p>中川家</p>
+                             </div>
+                         </div>
+                    </div>
+
+                    <!-- サッカー -->
+                    <div class="interest-card" tabindex="0" aria-pressed="false">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                 <div class="interest-icon"><i class="fas fa-futbol"></i></div>
+                                 <h3>サッカー</h3>
+                                 <p>好きな選手は、、</p>
+                             </div>
+                             <div class="card-back">
+                                 <img src="images/20210826_Busquets-Getty.jpg" alt="ブスケッツ" class="interests-img" loading="lazy">
+                                 <p>ブスケッツ</p>
+                             </div>
+                         </div>
+                      </div>
+
+                      <!-- 野球観戦 -->
+                     <div class="interest-card" tabindex="0" aria-pressed="false">
+                        <div class="card-inner">
+                             <div class="card-front">
+                                 <div class="interest-icon"><i class="fas fa-baseball-ball"></i></div>
+                                 <h3>野球観戦</h3>
+                                  <p>好きなチームは、、</p>
+                             </div>
+                             <div class="card-back">
+                                 <div class="interests-item">
+                                    <img src="images/images:download-4.jpg" alt="巨人" class="interests-img" loading="lazy">
+                                    <p>巨人</p>
+                                 </div>
+                             </div>
+                          </div>
+                     </div>
+                </div>       
+            </div>
+        </section>
+
+        <!-- 趣味セクション -->
+        <section class="hobbies">
+            <div class="container">
+                <h2 class="section-title">趣味</h2>
+                <div class="hobbies-content">
+                    <div class="hobby-item">
+                        <h3 class="hobby-title">
+                            <i class="fas fa-car"></i>
+                            <span class="hobby-text">ドライブ</span>
+                            <button class="expand-btn" data-target="driving-details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </h3>
+                        <div id="driving-details" class="expandable-content">
+                            <p>最近は山梨県に行きました。</p>
+                            <div class="hobby-images">
+                                <div class="hobby-image">
+                                    <img src="images/images:download-3.jpg" alt="富士山" class="detail-img">
+                                    <p class="image-caption">富士山</p>
+                                </div>
+                                <div class="hobby-image">
+                                    <img src="images/shiraitonotaki02.jpg" alt="白糸の滝" class="detail-img">
+                                    <p class="image-caption">白糸の滝</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hobby-item">
+                        <h3 class="hobby-title">
+                            <i class="fas fa-plane"></i>
+                            <span class="hobby-text">旅行</span>
+                            <button class="expand-btn" data-target="travel-details">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </h3>
+                        <div id="travel-details" class="expandable-content">
+                            <p>旅行した国々</p>
+                            <div class="travel-countries">
+                                <div class="country-item">
+                                    <img src="images/images:download-1.jpg" alt="韓国" class="country-img">
+                                    <p>韓国</p>
+                                </div>
+                                <div class="country-item">
+                                    <img src="images/images:download.jpg" alt="タイ" class="country-img">
+                                    <p>タイ</p>
+                                </div>
+                                <div class="country-item">
+                                    <img src="images/57782362_620x415.jpg" alt="台湾" class="country-img">
+                                    <p>台湾</p>
+                                </div>
+                                <div class="country-item">
+                                    <img src="images/travelguide_193_01.jpg" alt="ハワイ" class="country-img">
+                                    <p>ハワイ</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- その他の情報セクション -->
+        <section class="additional-info">
+            <div class="container">
+                <h2 class="section-title">その他</h2>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-user-friends"></i> MBTI</h3>
+                        <p class="mbti-type">
+                             <a class="mbti-link"
+                                 href="https://www.16personalities.com/ja/entp%E5%9E%8B%E3%81%AE%E6%80%A7%E6%A0%BC"
+                                 target="_blank" rel="noopener">ENTP</a>
+                        </p>
+                        <p>調べて出てくる内容が全て当たるぐらいのENTPです<br>仕事では隠してますが、、</p>
+                    </div>
+                    <div class="info-card secret-card">
+                        <h3><i class="fas fa-search"></i> 血液型</h3>
+                        <p class="secret-text">B型</p>
+                        <p class="secret-hint">仕事ではかなりA型ですが、プライベートはかなりB型です</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-subtitle">ページ</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html">私について</a></li>
+                        <li><a href="strengths.html">私の強み</a></li>
+                        <li><a href="goals.html">今後の目標</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 波田 迅. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
