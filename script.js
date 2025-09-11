@@ -498,3 +498,44 @@ if (typeof performance !== 'undefined' && performance.mark) {
         console.log('Script execution time:', measure.duration + 'ms');
     });
 }
+
+function initStrengthsExpand() {
+  const cards = document.querySelectorAll('.strength-card');
+
+  cards.forEach((card) => {
+    const btn = card.querySelector('.strength-expand');              // 展開ボタン
+    const details = card.querySelector('.strength-details');          // 展開対象
+
+    if (!btn || !details) return;
+
+    // 初期状態（閉じる）
+    details.classList.remove('active');
+    details.style.maxHeight = '0px';
+    details.style.overflow = 'hidden';
+    details.style.transition = 'max-height 0.3s ease';
+
+    const toggle = () => {
+      const isOpen = details.classList.toggle('active');
+      if (isOpen) {
+        // いったんautoで高さ取得→px指定でスムーズ開閉
+        details.style.maxHeight = details.scrollHeight + 'px';
+        btn.classList.add('active');
+      } else {
+        details.style.maxHeight = '0px';
+        btn.classList.remove('active');
+      }
+    };
+
+    // クリック/Enter/Spaceで開閉
+    btn.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
+    if (!btn.hasAttribute('tabindex')) btn.setAttribute('tabindex', '0');
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+  });
+}
+
+// DOM読み込み後に起動のどこか（既存のDOMContentLoaded内）で呼ぶ
+document.addEventListener('DOMContentLoaded', () => {
+  initStrengthsExpand();
+});
