@@ -575,27 +575,34 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (_) {}
   };
 
-  // いいね押下
-  likeBtn.addEventListener('click', () => {
-    if (getLiked()) {
-      // 既に押している → 何もしない（2度押し防止）
-      return;
-    }
-    const newCount = getLocalCount() + 1;
-    setLocalCount(newCount);
-    setLiked(true);
-    likeCountEl.textContent = newCount;
-    likeBtn.setAttribute('aria-pressed', 'true');
-    likeBtn.title = 'いいね済み';
+   // いいね押下（要素がある時だけ）
+   if (likeBtn && likeCountEl) {
+       likeBtn.addEventListener('click', () => {
+       const liked = getLiked();
+       let newCount = getLocalCount();
 
-    // GTM イベント
-    gtmPush({
-      event: 'reaction_like',
-      reaction_type: 'like',
-      page_path: location.pathname,
-      page_title: document.title
-    });
-  });
+    if (liked) {
+         // 解除処理
+        newCount = Math.max(0, newCount - 1);
+         setLocalCount(newCount);
+         setLiked(false);
+         likeBtn.setAttribute('aria-pressed', 'false');
+         likeBtn.title = 'いいね';
+         gtmPush({ event: 'reaction_unlike', reaction_type: 'unlike', page_path: location.pathname, page_title: document.title });
+        } 
+     else {
+         // いいね処理
+         newCount = newCount + 1;
+         setLocalCount(newCount);
+         setLiked(true);
+         likeBtn.setAttribute('aria-pressed', 'true');
+         likeBtn.title = 'いいね済み';
+         gtmPush({ event: 'reaction_like', reaction_type: 'like', page_path: location.pathname, page_title: document.title });
+       }
+
+       likeCountEl.textContent = newCount;
+     });
+   }
 
   // シェア押下
   shareBtn.addEventListener('click', async () => {
