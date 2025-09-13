@@ -1137,7 +1137,9 @@ html {
     scroll-behavior: smooth;
 }
 
-.reactions { margin: 32px auto; }
+.reactions {
+    width: 100%; 
+}
 
 .reactions-inner { 
    display: flex; 
