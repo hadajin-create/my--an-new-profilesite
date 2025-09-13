@@ -24,7 +24,7 @@
     <header class="header">
         <nav class="nav">
             <div class="nav-brand">
-                <h2 class="brand-name">他社紹介</h2>
+                <h2 class="brand-name">自己紹介</h2>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="index.html" class="nav-link active">私について</a></li>
@@ -41,6 +41,20 @@
 
     <!-- メインコンテンツ -->
     <main>
+        <!-- Reactions -->
+        <section class="reactions" aria-label="リアクション">
+            <div class="reactions-inner">
+                <button id="likeBtn" class="btn-like" aria-pressed="false" aria-label="いいね">
+                    <i class="fas fa-heart" aria-hidden="true"></i>
+                    <span class="like-text">いいね</span>
+                    <span id="likeCount" class="like-count">0</span>
+                </button>
+                <button id="shareBtn" class="btn-share" aria-label="このページをシェア">
+                    <i class="fas fa-share-alt" aria-hidden="true"></i>
+                    <span>シェア</span>
+                </button>
+            </div>
+        </section>
         <!-- ヒーローセクション -->
         <section class="hero">
             <div class="hero-content">

@@ -539,3 +539,119 @@ function initStrengthsExpand() {
 document.addEventListener('DOMContentLoaded', () => {
   initStrengthsExpand();
 });
+
+// ==== Reactions (Like & Share) ====
+(function () {
+  const likeBtn = document.getElementById('likeBtn');
+  const likeCountEl = document.getElementById('likeCount');
+  const shareBtn = document.getElementById('shareBtn');
+  if (!likeBtn || !shareBtn) return;
+
+  // ページごとにキーを分ける（URLパス基準）
+  const pageKey = `like:${location.pathname.replace(/\/$/, '') || '/'}`;
+
+  // ローカルの「いいね」回数（見た目用のみ）
+  const getLocalCount = () => Number(localStorage.getItem(`${pageKey}:count`) || 0);
+  const setLocalCount = (n) => localStorage.setItem(`${pageKey}:count`, String(n));
+
+  // 既に「いいね」したか
+  const getLiked = () => localStorage.getItem(`${pageKey}:liked`) === '1';
+  const setLiked = (v) => localStorage.setItem(`${pageKey}:liked`, v ? '1' : '0');
+
+  // 初期表示
+  const init = () => {
+    likeCountEl.textContent = getLocalCount();
+    const liked = getLiked();
+    likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+    if (liked) likeBtn.title = 'いいね済み';
+  };
+  init();
+
+  // GTM helper
+  const gtmPush = (obj) => {
+    try {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push(obj);
+    } catch (_) {}
+  };
+
+  // いいね押下
+  likeBtn.addEventListener('click', () => {
+    if (getLiked()) {
+      // 既に押している → 何もしない（2度押し防止）
+      return;
+    }
+    const newCount = getLocalCount() + 1;
+    setLocalCount(newCount);
+    setLiked(true);
+    likeCountEl.textContent = newCount;
+    likeBtn.setAttribute('aria-pressed', 'true');
+    likeBtn.title = 'いいね済み';
+
+    // GTM イベント
+    gtmPush({
+      event: 'reaction_like',
+      reaction_type: 'like',
+      page_path: location.pathname,
+      page_title: document.title
+    });
+  });
+
+  // シェア押下
+  shareBtn.addEventListener('click', async () => {
+    const shareData = {
+      title: document.title || 'シェア',
+      text: 'このページをシェアします',
+      url: location.href
+    };
+
+    // Web Share API
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        gtmPush({
+          event: 'reaction_share',
+          share_method: 'web_share_api',
+          page_path: location.pathname,
+          page_title: document.title
+        });
+        return;
+      } catch (e) {
+        // キャンセル等はフォールバックへ
+      }
+    }
+
+    // フォールバック：URLコピー
+    try {
+      await navigator.clipboard.writeText(location.href);
+      alert('URLをコピーしました！');
+      gtmPush({
+        event: 'reaction_share',
+        share_method: 'clipboard',
+        page_path: location.pathname,
+        page_title: document.title
+      });
+    } catch (_) {
+      // 更なるフォールバック：SNSリンクを開く（ユーザー選択）
+      const url = encodeURIComponent(location.href);
+      const text = encodeURIComponent(document.title);
+      const options = [
+        { name: 'X (旧Twitter)', href: `https://twitter.com/intent/tweet?url=${url}&text=${text}` },
+        { name: 'LINE', href: `https://social-plugins.line.me/lineit/share?url=${url}` },
+        { name: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` },
+      ];
+      const msg = 'シェア方法を選んでください：\n' + options.map((o, i) => `${i+1}. ${o.name}`).join('\n');
+      const choice = prompt(msg, '1');
+      const idx = Number(choice) - 1;
+      if (options[idx]) {
+        window.open(options[idx].href, '_blank', 'noopener,noreferrer');
+        gtmPush({
+          event: 'reaction_share',
+          share_method: options[idx].name.toLowerCase(),
+          page_path: location.pathname,
+          page_title: document.title
+        });
+      }
+    }
+  });
+})();

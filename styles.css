@@ -1136,3 +1136,16 @@ body {
 html {
     scroll-behavior: smooth;
 }
+
+.reactions { margin: 32px auto; }
+.reactions-inner { display: flex; gap: 12px; align-items: center; }
+.btn-like, .btn-share {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 999px; border: 1px solid #ddd;
+  background: #fff; cursor: pointer; font: inherit;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+.btn-like[aria-pressed="true"] { border-color: #f33; background: #fff0f0; }
+.btn-like .fa-heart { transition: transform .15s ease; }
+.btn-like:active .fa-heart { transform: scale(1.15); }
+.like-count { min-width: 1.5em; text-align: right; }
