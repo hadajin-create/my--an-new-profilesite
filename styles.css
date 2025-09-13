@@ -1138,7 +1138,7 @@ html {
 }
 
 .reactions { margin: 32px auto; }
-.reactions-inner { display: flex; gap: 12px; align-items: center; }
+.reactions-inner { display: flex; gap: 12px; align-items: center; justify-content: flex-end;}
 .btn-like, .btn-share {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 14px; border-radius: 999px; border: 1px solid #ddd;
