@@ -1258,3 +1258,59 @@ html {
 .btn-fav[aria-pressed="true"] .fa-star {
   color: #f1c40f;
 }
+
+/* ── 共通：お気に入り & シェア（PCもスマホも同じ高さに） ───────────────── */
+.btn-fav,
+.btn-share {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 10px 16px;           /* 高さはココで統一 */
+  border: 1.5px solid #e5e7eb;  /* 枠の太さも統一 */
+  border-radius: 999px;         /* pill 形状 */
+  background: #fff;
+
+  font-size: 16px;              /* 文字サイズ統一 */
+  line-height: 1;               /* 高さブレ防止 */
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s;
+}
+
+/* アイコンの大きさも完全一致させる */
+.btn-fav i,
+.btn-share i {
+  font-size: 1em;     /* 文字と揃える */
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+}
+
+/* ホバー（共通） */
+.btn-fav:hover,
+.btn-share:hover {
+  background: #f9f9f9;
+}
+
+/* ── お気に入り（黄色スターのON状態だけ個別に） ───────────────────────── */
+.btn-fav .fa-star { color: #999; }
+.btn-fav[aria-pressed="true"]       { border-color: #f1c40f; background: #fffbea; }
+.btn-fav[aria-pressed="true"] .fa-star { color: #f1c40f; }
+
+/* ── スマホ（幅480px以下）での最終そろえ ─────────────────────────── */
+@media (max-width: 480px) {
+  .btn-fav,
+  .btn-share {
+    padding: 8px 14px;          /* 少しだけコンパクトに */
+    font-size: 15px;
+    min-width: auto !important; /* 不要な固定幅を無効化（高さズレ防止） */
+  }
+  .btn-fav i,
+  .btn-share i {
+    font-size: 1em;
+  }
+}
