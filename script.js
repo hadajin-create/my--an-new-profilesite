@@ -754,3 +754,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 })();
+
+// === 共通: DataLayer push helper（KPI級用） ===
+function dlPushButtonClick(detail){
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push(Object.assign({
+    event: 'button_click',   // ← GTMで拾うカスタムイベント名を統一
+    source: 'datalayer'      // ← 属性方式との住み分けフラグ（超重要）
+  }, detail));
+}
+
+// ★ お気に入り（黄色スター）
+document.getElementById('favBtn')?.addEventListener('click', () => {
+  const isOn = (document.getElementById('favBtn').getAttribute('aria-pressed') === 'true');
+  dlPushButtonClick({
+    button_id: 'favBtn',
+    button_text: 'お気に入り',
+    button_category: 'reaction',
+    action: isOn ? 'unfavorite' : 'favorite',
+    page_path: location.pathname,
+    page_title: document.title
+  });
+});
+
+// 🔗 シェア（Web Share / クリップボード / SNSフォールバック いずれでも）
+document.getElementById('shareBtn')?.addEventListener('click', () => {
+  dlPushButtonClick({
+    button_id: 'shareBtn',
+    button_text: 'シェア',
+    button_category: 'share',
+    action: 'click',
+    page_path: location.pathname,
+    page_title: document.title
+  });
+});

@@ -266,5 +266,23 @@
     </footer>
 
     <script src="script.js"></script>
+<script>
+  // dataLayer がまだ定義されていなければ初期化
+  window.dataLayer = window.dataLayer || [];
+
+  // ボタンがクリックされたときの処理
+  document.getElementById("likeBtn").addEventListener("click", function () {
+    dataLayer.push({
+      event: "button_click",         // GTMのトリガーで指定したイベント名
+      button_id: "likeBtn",          // ボタンのID
+      button_text: "お気に入り",       // ボタンのテキスト
+      button_category: "favorite",   // 任意のカテゴリ
+      action: "click",               // アクション内容
+      page_path: window.location.pathname,  // ページのパス
+      page_title: document.title,          // ページのタイトル
+      source: "datalayer"            // datalayer由来と分かる印
+    });
+  });
+</script>
 </body>
 </html>
