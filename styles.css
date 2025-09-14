@@ -356,6 +356,42 @@ body {
   margin: 0 auto 0.75rem; 
 }
 
+/* 裏面を絶対配置の基準にする */
+.interest-card .card-back {
+  position: relative;           /* ←これが右下固定の基準 */
+  padding-bottom: 56px;         /* ←ボタン分の余白（重なり防止・任意値） */
+}
+
+/* いいねボタン（裏面右下固定） */
+.interest-card .card-back .btn-like {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+/* ON状態の見た目 */
+.interest-card .card-back .btn-like[aria-pressed="true"]{
+  border-color: #ff8aa0;
+  background: #fff0f3;
+}
+.interest-card .card-back .btn-like[aria-pressed="true"] .fa-heart{
+  color:#e63946;
+}
+
+/* タップ感 */
+.interest-card .card-back .btn-like:active{ transform: scale(0.98); }
+
 /* 趣味セクション */
 .hobbies {
     padding: 100px 0;

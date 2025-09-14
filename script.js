@@ -662,3 +662,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 })();
+
+// ===== Card-wise Like (Back-only) =====
+(function(){
+  const pageKeyBase = (location.pathname.replace(/\/$/, '') || '/');
+
+  // localStorage helpers
+  const keyLiked  = (id)=> `like:${pageKeyBase}:${id}:liked`;
+  const keyCount  = (id)=> `like:${pageKeyBase}:${id}:count`;
+  const getLiked  = (id)=> localStorage.getItem(keyLiked(id)) === '1';
+  const setLiked  = (id,v)=> localStorage.setItem(keyLiked(id), v ? '1' : '0');
+  const getCount  = (id)=> Number(localStorage.getItem(keyCount(id)) || 0);
+  const setCount  = (id,n)=> localStorage.setItem(keyCount(id), String(n));
+
+  // dataLayer helper（②で統一したイベント）
+  function pushDL(payload){
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(Object.assign({
+      event: 'button_click',
+      source: 'datalayer',
+      button_category: 'interest_like'
+    }, payload));
+  }
+
+  // ★ 裏面にあるボタンのみを対象にするセレクタ
+  document.querySelectorAll('.interest-card .card-back .btn-like[data-like-id]').forEach((btn)=>{
+    const likeId = btn.getAttribute('data-like-id');
+    const countEl = btn.querySelector('.like-count');
+
+    // 初期表示
+    const liked = getLiked(likeId);
+    btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+    if (countEl) countEl.textContent = getCount(likeId);
+
+    // クリック（トグル）
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation(); // ← フリップや親要素のクリック伝播を防止
+      let liked = getLiked(likeId);
+      let count = getCount(likeId);
+
+      if (liked){
+        liked = false; count = Math.max(0, count - 1);
+        setLiked(likeId,false); setCount(likeId,count);
+        btn.setAttribute('aria-pressed','false');
+        if (countEl) countEl.textContent = count;
+        pushDL({ button_id: likeId, button_text: 'カードいいね', action: 'unlike' });
+      } else {
+        liked = true; count = count + 1;
+        setLiked(likeId,true); setCount(likeId,count);
+        btn.setAttribute('aria-pressed','true');
+        if (countEl) countEl.textContent = count;
+        pushDL({ button_id: likeId, button_text: 'カードいいね', action: 'like' });
+      }
+    });
+
+    // キーボード対応
+    btn.addEventListener('keydown',(e)=>{
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        btn.click();
+      }
+    });
+  });
+})();
