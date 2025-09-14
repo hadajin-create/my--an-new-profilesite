@@ -1218,3 +1218,43 @@ html {
   color:#f1c40f;          /* スターを黄色に */
 }
 .btn-fav:active{ transform:scale(0.98); }
+
+/* 共通スタイル（お気に入り & シェア 両方） */
+.btn-like,
+.btn-share,
+.btn-fav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  min-width: 90px;             /* 横幅をそろえる */
+  border: 1px solid #ddd;
+  border-radius: 999px;        /* 完全な pill 型 */
+  background: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1.2;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+/* ホバー時（共通） */
+.btn-like:hover,
+.btn-share:hover,
+.btn-fav:hover {
+  background: #f9f9f9;
+}
+
+/* お気に入り（黄色スター） */
+.btn-fav .fa-star {
+  color: #999; /* デフォルトはグレー */
+}
+
+.btn-fav[aria-pressed="true"] {
+  border-color: #f1c40f;
+  background: #fffbea;
+}
+
+.btn-fav[aria-pressed="true"] .fa-star {
+  color: #f1c40f;
+}
