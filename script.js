@@ -540,71 +540,94 @@ document.addEventListener('DOMContentLoaded', () => {
   initStrengthsExpand();
 });
 
-// ==== Reactions (Like & Share) ====
+// ==== Reactions (Favorite & Share) ====
 (function () {
-  const likeBtn = document.getElementById('likeBtn');
-  const likeCountEl = document.getElementById('likeCount');
+  // 要素参照
+  const favBtn = document.getElementById('favBtn');
+  const favCountEl = document.getElementById('favCount');
   const shareBtn = document.getElementById('shareBtn');
-  if (!likeBtn || !shareBtn) return;
+  if (!favBtn || !shareBtn) return;
 
-  // ページごとにキーを分ける（URLパス基準）
-  const pageKey = `like:${location.pathname.replace(/\/$/, '') || '/'}`;
+  // ページキー（URLパスごとに分ける）
+  const pageKeyBase = (location.pathname.replace(/\/$/, '') || '/');
+  const favCountKey = `fav:${pageKeyBase}:count`;
+  const favFlagKey  = `fav:${pageKeyBase}:fav`;
 
-  // ローカルの「いいね」回数（見た目用のみ）
-  const getLocalCount = () => Number(localStorage.getItem(`${pageKey}:count`) || 0);
-  const setLocalCount = (n) => localStorage.setItem(`${pageKey}:count`, String(n));
+  // 旧likeキーからの移行（任意：前の「いいね」数を引き継ぎたい場合）
+  (function migrateFromLike(){
+    const oldCountKey = `like:${pageKeyBase}:count`;
+    const oldFlagKey  = `like:${pageKeyBase}:liked`;
+    if (!localStorage.getItem(favCountKey) && localStorage.getItem(oldCountKey)){
+      localStorage.setItem(favCountKey, localStorage.getItem(oldCountKey));
+    }
+    if (!localStorage.getItem(favFlagKey) && localStorage.getItem(oldFlagKey)){
+      localStorage.setItem(favFlagKey, localStorage.getItem(oldFlagKey)==='1' ? '1':'0');
+    }
+  })();
 
-  // 既に「いいね」したか
-  const getLiked = () => localStorage.getItem(`${pageKey}:liked`) === '1';
-  const setLiked = (v) => localStorage.setItem(`${pageKey}:liked`, v ? '1' : '0');
+  // localStorage helpers
+  const getCount = () => Number(localStorage.getItem(favCountKey) || 0);
+  const setCount = (n) => localStorage.setItem(favCountKey, String(n));
+  const getFav   = () => localStorage.getItem(favFlagKey) === '1';
+  const setFav   = (v) => localStorage.setItem(favFlagKey, v ? '1' : '0');
+
+  // dataLayer helper（最新方針：button_click に集約）
+  function pushDL(obj){
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(Object.assign({
+      event: 'button_click',
+      source: 'datalayer',
+    }, obj));
+  }
 
   // 初期表示
   const init = () => {
-    likeCountEl.textContent = getLocalCount();
-    const liked = getLiked();
-    likeBtn.setAttribute('aria-pressed', liked ? 'true' : 'false');
-    if (liked) likeBtn.title = 'いいね済み';
+    favCountEl.textContent = getCount();
+    const f = getFav();
+    favBtn.setAttribute('aria-pressed', f ? 'true' : 'false');
+    if (f) favBtn.title = 'お気に入り済み';
   };
   init();
 
-  // GTM helper
-  const gtmPush = (obj) => {
-    try {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push(obj);
-    } catch (_) {}
-  };
+  // お気に入りトグル
+  favBtn.addEventListener('click', () => {
+    let f = getFav();
+    let c = getCount();
 
-   // いいね押下（要素がある時だけ）
-   if (likeBtn && likeCountEl) {
-       likeBtn.addEventListener('click', () => {
-       const liked = getLiked();
-       let newCount = getLocalCount();
+    if (f) {
+      // 解除
+      f = false;
+      c = Math.max(0, c - 1);
+      setFav(false);
+      pushDL({
+        button_id: 'favBtn',
+        button_text: 'お気に入り',
+        button_category: 'reaction',
+        action: 'unfavorite',
+        page_path: location.pathname,
+        page_title: document.title
+      });
+    } else {
+      // 登録
+      f = true;
+      c = c + 1;
+      setFav(true);
+      pushDL({
+        button_id: 'favBtn',
+        button_text: 'お気に入り',
+        button_category: 'reaction',
+        action: 'favorite',
+        page_path: location.pathname,
+        page_title: document.title
+      });
+    }
+    setCount(c);
+    favBtn.setAttribute('aria-pressed', f ? 'true' : 'false');
+    favBtn.title = f ? 'お気に入り済み' : '';
+    favCountEl.textContent = c;
+  });
 
-    if (liked) {
-         // 解除処理
-        newCount = Math.max(0, newCount - 1);
-         setLocalCount(newCount);
-         setLiked(false);
-         likeBtn.setAttribute('aria-pressed', 'false');
-         likeBtn.title = 'いいね';
-         gtmPush({ event: 'reaction_unlike', reaction_type: 'unlike', page_path: location.pathname, page_title: document.title });
-        } 
-     else {
-         // いいね処理
-         newCount = newCount + 1;
-         setLocalCount(newCount);
-         setLiked(true);
-         likeBtn.setAttribute('aria-pressed', 'true');
-         likeBtn.title = 'いいね済み';
-         gtmPush({ event: 'reaction_like', reaction_type: 'like', page_path: location.pathname, page_title: document.title });
-       }
-
-       likeCountEl.textContent = newCount;
-     });
-   }
-
-  // シェア押下
+  // シェア押下（既存仕様を踏襲）
   shareBtn.addEventListener('click', async () => {
     const shareData = {
       title: document.title || 'シェア',
@@ -616,9 +639,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-        gtmPush({
-          event: 'reaction_share',
-          share_method: 'web_share_api',
+        pushDL({
+          button_id: 'shareBtn',
+          button_text: 'シェア',
+          button_category: 'share',
+          action: 'web_share_api',
           page_path: location.pathname,
           page_title: document.title
         });
@@ -632,29 +657,33 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       await navigator.clipboard.writeText(location.href);
       alert('URLをコピーしました！');
-      gtmPush({
-        event: 'reaction_share',
-        share_method: 'clipboard',
+      pushDL({
+        button_id: 'shareBtn',
+        button_text: 'シェア',
+        button_category: 'share',
+        action: 'clipboard',
         page_path: location.pathname,
         page_title: document.title
       });
     } catch (_) {
-      // 更なるフォールバック：SNSリンクを開く（ユーザー選択）
+      // さらにSNSフォールバック
       const url = encodeURIComponent(location.href);
       const text = encodeURIComponent(document.title);
       const options = [
-        { name: 'X (旧Twitter)', href: `https://twitter.com/intent/tweet?url=${url}&text=${text}` },
-        { name: 'LINE', href: `https://social-plugins.line.me/lineit/share?url=${url}` },
-        { name: 'Facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` },
+        { name: 'x', href: `https://twitter.com/intent/tweet?url=${url}&text=${text}` },
+        { name: 'line', href: `https://social-plugins.line.me/lineit/share?url=${url}` },
+        { name: 'facebook', href: `https://www.facebook.com/sharer/sharer.php?u=${url}` },
       ];
       const msg = 'シェア方法を選んでください：\n' + options.map((o, i) => `${i+1}. ${o.name}`).join('\n');
       const choice = prompt(msg, '1');
       const idx = Number(choice) - 1;
       if (options[idx]) {
         window.open(options[idx].href, '_blank', 'noopener,noreferrer');
-        gtmPush({
-          event: 'reaction_share',
-          share_method: options[idx].name.toLowerCase(),
+        pushDL({
+          button_id: 'shareBtn',
+          button_text: 'シェア',
+          button_category: 'share',
+          action: options[idx].name,
           page_path: location.pathname,
           page_title: document.title
         });

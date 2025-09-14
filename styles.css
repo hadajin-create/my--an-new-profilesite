@@ -1194,3 +1194,24 @@ html {
 .btn-like .fa-heart { transition: transform .15s ease; }
 .btn-like:active .fa-heart { transform: scale(1.15); }
 .like-count { min-width: 1.5em; text-align: right; }
+
+/* お気に入り（黄色スター） */
+.btn-fav{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border:1px solid #ddd;
+  border-radius:999px;
+  background:#fff;
+  cursor:pointer;
+  font-size:14px;
+}
+.btn-fav[aria-pressed="true"]{
+  border-color:#f1c40f;   /* 黄色系 */
+  background:#fffbea;     /* 薄い黄色 */
+}
+.btn-fav[aria-pressed="true"] .fa-star{
+  color:#f1c40f;          /* スターを黄色に */
+}
+.btn-fav:active{ transform:scale(0.98); }
