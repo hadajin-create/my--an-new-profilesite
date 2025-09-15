@@ -284,5 +284,30 @@
     });
   });
 </script>
+<script>
+  // dataLayer 初期化（重複OK）
+  window.dataLayer = window.dataLayer || [];
+
+  // 1セッション内のページビュー数をカウント（タブ毎）
+  // → セッション単位での重複発火を防ぐため sessionStorage を使用
+  const PV_KEY = "pv_count_session";
+  const SENT_KEY = "kv_3pages_sent";
+
+  let pv = Number(sessionStorage.getItem(PV_KEY) || 0);
+  pv += 1;
+  sessionStorage.setItem(PV_KEY, String(pv));
+
+  // しきい値（3PV）を超えた “最初の1回だけ” 発火
+  const alreadySent = sessionStorage.getItem(SENT_KEY) === "1";
+  if (pv >= 3 && !alreadySent) {
+    window.dataLayer.push({
+      event: "key_event",          // ← GTMのカスタムイベント名と一致
+      key_event_name: "3_pages_viewed",
+      page_views: pv,
+      source: "datalayer"
+    });
+    sessionStorage.setItem(SENT_KEY, "1");
+  }
+</script>
 </body>
 </html>
