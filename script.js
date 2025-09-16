@@ -948,6 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initScrollDepth() {
   const thresholds = [25, 50, 75, 100];
   const fired = new Set();
+  const t0 = (performance && performance.now ? performance.now() : Date.now());
 
   const calcPercent = () => {
     const doc = document.documentElement;
@@ -968,7 +969,14 @@ function initScrollDepth() {
     for (const t of thresholds) {
       if (!fired.has(t) && pct >= t) {
         fired.add(t);
-        pushDL({ event: 'scroll_depth', scroll_percent: t });
+        // Send both scroll_percent and percent_scrolled for GTM/GA4 mapping ease
+        pushDL({
+          event: 'scroll_depth',
+          scroll_percent: t,
+          percent_scrolled: t,
+          scroll_direction: 'vertical',
+          time_since_load_sec: Math.round(((performance && performance.now ? performance.now() : Date.now()) - t0) / 1000)
+        });
         gtmDiagLog('SCROLL_DEPTH fired', { percent: t, calc: pct });
       }
     }
@@ -992,7 +1000,7 @@ function initScrollDepth() {
       entries.forEach(e => {
         if (e.isIntersecting && !fired.has(100)) {
           fired.add(100);
-          pushDL({ event: 'scroll_depth', scroll_percent: 100 });
+          pushDL({ event: 'scroll_depth', scroll_percent: 100, percent_scrolled: 100, scroll_direction: 'vertical', time_since_load_sec: Math.round(((performance && performance.now ? performance.now() : Date.now()) - t0) / 1000) });
           gtmDiagLog('SCROLL_DEPTH sentinel 100% fired', {});
           obs.disconnect();
         }
@@ -1016,6 +1024,167 @@ function initEngagementPing() {
 document.addEventListener('DOMContentLoaded', () => {
   initScrollDepth();
   initEngagementPing();
+  initSessionAndContext();
+  initGenericClickTracking();
+  initKeyUserThreePages();
 });
 
 // （analytics: duplicative handlers removed）
+
+// =============================
+// Analytics: Session/context + generic click
+// =============================
+function initSessionAndContext() {
+  try {
+    const now = Date.now();
+    const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+    const LS_VISIT_COUNT = 'ga_like_visit_count';
+    const LS_LAST_SEEN = 'ga_like_last_seen_ts';
+
+    const lastSeen = Number(localStorage.getItem(LS_LAST_SEEN) || 0);
+    const isNewSession = !lastSeen || (now - lastSeen) > SESSION_TIMEOUT_MS;
+    if (isNewSession) {
+      const visits = Number(localStorage.getItem(LS_VISIT_COUNT) || 0) + 1;
+      localStorage.setItem(LS_VISIT_COUNT, String(visits));
+    }
+    localStorage.setItem(LS_LAST_SEEN, String(now));
+
+    // Build context values
+    const visit_count = Number(localStorage.getItem(LS_VISIT_COUNT) || 1);
+    const device_type = getDeviceType();
+    const utm = getUtmParams();
+    const referrer = document.referrer || '';
+    const referrer_domain = (() => {
+      try { return referrer ? new URL(referrer).hostname : ''; } catch (_) { return ''; }
+    })();
+
+    pushDL({
+      event: 'page_context',
+      visit_count,
+      device_type,
+      referrer_domain,
+      utm_source: utm.utm_source || '',
+      utm_medium: utm.utm_medium || '',
+      utm_campaign: utm.utm_campaign || '',
+      utm_content: utm.utm_content || '',
+      utm_term: utm.utm_term || ''
+    });
+  } catch (e) {
+    console.warn('initSessionAndContext failed', e);
+  }
+}
+
+function getDeviceType() {
+  try {
+    const ua = navigator.userAgent || '';
+    const isTablet = /iPad|Tablet|Android(?!.*Mobile)/i.test(ua) || (Math.min(screen.width, screen.height) >= 768 && Math.max(screen.width, screen.height) <= 1366);
+    const isMobile = /iPhone|Android.*Mobile|Windows Phone|iPod/i.test(ua) || Math.max(screen.width, screen.height) < 768;
+    if (isTablet) return 'tablet';
+    if (isMobile) return 'mobile';
+    return 'desktop';
+  } catch (_) { return 'unknown'; }
+}
+
+function getUtmParams() {
+  try {
+    const p = new URLSearchParams(location.search);
+    return {
+      utm_source: p.get('utm_source'),
+      utm_medium: p.get('utm_medium'),
+      utm_campaign: p.get('utm_campaign'),
+      utm_content: p.get('utm_content'),
+      utm_term: p.get('utm_term')
+    };
+  } catch (_) { return {}; }
+}
+
+function initGenericClickTracking() {
+  // Delegate clicks on <a>, <button>, and elements with [data-gtm-id]
+  document.addEventListener('click', function(e) {
+    try {
+      const el = e.target.closest('a, button, [data-gtm-id]');
+      if (!el) return;
+      // Avoid double counting known custom buttons already tracked
+      if (el.id === 'favBtn' || el.id === 'shareBtn' || el.classList.contains('btn-like')) return;
+
+      const tag = (el.tagName || '').toLowerCase();
+      const id = el.id || '';
+      const classes = (el.className || '').toString();
+      const dataGtmId = el.getAttribute('data-gtm-id') || '';
+      const role = el.getAttribute('role') || '';
+      const text = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 100);
+      const href = el.getAttribute('href') || '';
+      const target = el.getAttribute('target') || '';
+      const rel = el.getAttribute('rel') || '';
+
+      let link_type = '';
+      let dest_path = '';
+      if (tag === 'a' && href) {
+        if (/^mailto:/i.test(href)) link_type = 'mailto';
+        else if (/^tel:/i.test(href)) link_type = 'tel';
+        else if (/^#/.test(href)) link_type = 'hash';
+        else {
+          let u;
+          try { u = new URL(href, location.href); } catch(_) {}
+          if (u) {
+            const sameHost = u.hostname === location.hostname;
+            link_type = sameHost ? 'internal' : 'external';
+            dest_path = sameHost ? (u.pathname + u.search) : u.href;
+          }
+        }
+      }
+
+      pushDL({
+        event: 'click_ui',
+        element_tag: tag,
+        element_id: id,
+        element_classes: classes,
+        element_role: role,
+        element_text: text,
+        data_gtm_id: dataGtmId,
+        href: href,
+        link_type: link_type,
+        dest_path: dest_path,
+        target: target,
+        rel: rel
+      });
+    } catch (err) {
+      // no-throw
+    }
+  }, true); // capture phase to avoid stopPropagation
+}
+
+// =============================
+// Analytics: Key event (3+ pages per session)
+// =============================
+function initKeyUserThreePages() {
+  try {
+    const SS_SESSION_ID = 'ga_like_session_id';
+    const SS_PAGE_COUNT = 'ga_like_session_page_count';
+    const SS_KEY_FIRED = 'ga_like_key3_fired';
+
+    // Simple session id per tab
+    if (!sessionStorage.getItem(SS_SESSION_ID)) {
+      sessionStorage.setItem(SS_SESSION_ID, Math.random().toString(36).slice(2));
+      sessionStorage.setItem(SS_PAGE_COUNT, '0');
+      sessionStorage.setItem(SS_KEY_FIRED, '0');
+    }
+
+    // Increment unique page views within this session
+    const currentPath = location.pathname + location.search;
+    const lastPathKey = 'ga_like_last_path';
+    const lastPath = sessionStorage.getItem(lastPathKey);
+    if (lastPath !== currentPath) {
+      const n = Number(sessionStorage.getItem(SS_PAGE_COUNT) || 0) + 1;
+      sessionStorage.setItem(SS_PAGE_COUNT, String(n));
+      sessionStorage.setItem(lastPathKey, currentPath);
+      // Fire key event once upon reaching 3+ pages
+      if (n >= 3 && sessionStorage.getItem(SS_KEY_FIRED) !== '1') {
+        sessionStorage.setItem(SS_KEY_FIRED, '1');
+        pushDL({ event: 'key_user_3_pages', pages_in_session: n });
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+}
