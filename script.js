@@ -17,8 +17,19 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // =============================
-// Analytics: common dataLayer
+// Analytics: common dataLayer + GTM diagnostics
 // =============================
+// 小さなデバッグスイッチ：?dl_debug=1 で localStorage に保存
+(function latchDlDebugParamOnce() {
+  try {
+    if (!window.__DL_DEBUG_LATCHED__) {
+      const params = new URLSearchParams(location.search);
+      if (params.get('dl_debug') === '1') localStorage.setItem('dl_debug', '1');
+      window.__DL_DEBUG_LATCHED__ = true;
+    }
+  } catch (_) {}
+})();
+
 // dataLayer.push() wrapper to ensure common fields
 const GTM_EXPECTED_CONTAINER_ID = 'GTM-TB5ZLHH5';
 
@@ -84,6 +95,116 @@ function pushDL(payload) {
     console.warn('pushDL failed', e);
   }
 }
+
+// =============================
+// GTM Diagnostics (opt-in via ?dl_debug=1 or localStorage.dl_debug=1)
+// =============================
+(function initGtmDiagnostics() {
+  const debugOn = (() => { try { return localStorage.getItem('dl_debug') === '1'; } catch (_) { return false; } })();
+  if (!debugOn) return;
+
+  // helper
+  const now = () => (performance && performance.now ? performance.now() : Date.now());
+
+  // 1) 既存の dataLayer 初期値確認（gtm.js イベントがあるか）
+  try {
+    const dl = window.dataLayer;
+    if (Array.isArray(dl)) {
+      const hasGtmJs = dl.some(e => e && e.event === 'gtm.js');
+      gtmDiagLog('BOOT dataLayer present', { length: dl.length, has_gtm_js_event: !!hasGtmJs });
+    } else {
+      gtmDiagLog('BOOT dataLayer not array or missing', { type: typeof dl });
+    }
+  } catch (_) {}
+
+  // 2) dataLayer.push をスパイ（他ソースの push 可視化）
+  try {
+    const dl = window.dataLayer = window.dataLayer || [];
+    if (!dl.__gtmPushWrapped__) {
+      const origPush = dl.push.bind(dl);
+      dl.push = function () {
+        try {
+          const args = Array.from(arguments || []);
+          const evt = (args && args[0] && args[0].event) ? String(args[0].event) : undefined;
+          gtmDiagLog('DL.push intercepted', { event: evt, payload: args[0] });
+        } catch (_) {}
+        return origPush.apply(null, arguments);
+      };
+      Object.defineProperty(dl, '__gtmPushWrapped__', { value: true });
+      gtmDiagLog('DL.push wrapped for diagnostics');
+    }
+  } catch (_) {}
+
+  // 3) GTM スクリプト要素の検知とエラー監視
+  try {
+    const tagSelector = 'script[src*="googletagmanager.com/gtm.js"]';
+    const tag = document.querySelector(tagSelector);
+    if (tag) {
+      gtmDiagLog('GTM script tag present', { src: tag.src, async: tag.async, defer: tag.defer });
+    } else {
+      gtmDiagLog('GTM script tag NOT found in DOM');
+    }
+
+    // 以後に追加される場合も監視
+    const mo = new MutationObserver((mutations) => {
+      mutations.forEach(m => {
+        m.addedNodes && Array.from(m.addedNodes).forEach(n => {
+          if (n && n.tagName === 'SCRIPT') {
+            const s = n;
+            if (s.src && s.src.includes('googletagmanager.com/gtm.js')) {
+              gtmDiagLog('GTM script inserted', { src: s.src });
+              s.addEventListener('load', () => gtmDiagLog('GTM script load event fired'));
+              s.addEventListener('error', () => gtmDiagLog('CAUSE:SCRIPT_LOAD_ERROR gtm.js load failed (network/adblock/CSP)'));
+            }
+          }
+        });
+      });
+    });
+    try { mo.observe(document.documentElement || document.body, { childList: true, subtree: true }); } catch (_) {}
+  } catch (_) {}
+
+  // 4) google_tag_manager の検知をポーリング（最大5秒）
+  try {
+    const t0 = now();
+    let hit = false;
+    const idsAtStart = Object.keys(window.google_tag_manager || {});
+    gtmDiagLog('Initial google_tag_manager ids', idsAtStart);
+    const iv = setInterval(() => {
+      const gtm = window.google_tag_manager;
+      if (gtm && Object.keys(gtm).length) {
+        hit = true;
+        clearInterval(iv);
+        const ids = Object.keys(gtm);
+        gtmDiagLog('google_tag_manager detected', { ids, detected_ms: Math.round(now() - t0) });
+        if (GTM_EXPECTED_CONTAINER_ID && !gtm[GTM_EXPECTED_CONTAINER_ID]) {
+          gtmDiagLog('CAUSE:ID_MISMATCH expected container not present after detection', { expected: GTM_EXPECTED_CONTAINER_ID, detected: ids });
+        }
+      }
+    }, 100);
+    setTimeout(() => {
+      if (!hit) {
+        clearInterval(iv);
+        gtmDiagLog('CAUSE:TIMEOUT google_tag_manager not detected within 5000ms');
+      }
+    }, 5000);
+  } catch (_) {}
+
+  // 5) リソースロードエラー（スクリプト/リンク）の検知
+  try {
+    window.addEventListener('error', function (e) {
+      try {
+        const t = e && e.target;
+        if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK' || t.tagName === 'IMG')) {
+          const src = t.tagName === 'LINK' ? t.href : t.src;
+          gtmDiagLog('RESOURCE_ERROR', { tag: t.tagName, src });
+          if (src && src.includes('googletagmanager.com/gtm.js')) {
+            gtmDiagLog('CAUSE:SCRIPT_LOAD_ERROR gtm.js resource error captured');
+          }
+        }
+      } catch (_) {}
+    }, true);
+  } catch (_) {}
+})();
 
 // モバイルメニューの制御
 function initMobileMenu() {
