@@ -16,6 +16,75 @@ document.addEventListener('DOMContentLoaded', function() {
     initLazyLoading();
 });
 
+// =============================
+// Analytics: common dataLayer
+// =============================
+// dataLayer.push() wrapper to ensure common fields
+const GTM_EXPECTED_CONTAINER_ID = 'GTM-TB5ZLHH5';
+
+function gtmDiagLog(message, details) {
+  try {
+    if (localStorage.getItem('dl_debug') === '1') {
+      const prefix = '[GTM_DIAG]';
+      if (details !== undefined) {
+        console.log(prefix + ' ' + message, details);
+      } else {
+        console.log(prefix + ' ' + message);
+      }
+    }
+  } catch (_) {}
+}
+
+function pushDL(payload) {
+  try {
+    window.dataLayer = window.dataLayer || [];
+    const base = {
+      page_path: location.pathname,
+      page_title: document.title,
+      source: 'datalayer'
+    };
+    const merged = Object.assign({}, base, payload);
+
+    // Diagnostics: check GTM availability & container id
+    const gtm = window.google_tag_manager;
+    if (!gtm) {
+      gtmDiagLog('CAUSE:NO_GTM google_tag_manager not present. gtm.js not loaded or blocked (ad blocker, CSP, network).');
+    } else {
+      const ids = Object.keys(gtm);
+      gtmDiagLog('google_tag_manager present. containers:', ids);
+      if (GTM_EXPECTED_CONTAINER_ID && !gtm[GTM_EXPECTED_CONTAINER_ID]) {
+        gtmDiagLog('CAUSE:ID_MISMATCH expected container not present. Check snippet ID or workspace publish status.', { expected: GTM_EXPECTED_CONTAINER_ID, detected: ids });
+      }
+    }
+
+    // lightweight debug switch: add ?dl_debug=1 or set localStorage.dl_debug='1'
+    // URL param is latched into localStorage once per load
+    if (!window.__DL_DEBUG_INITED__) {
+      try {
+        const params = new URLSearchParams(location.search);
+        if (params.get('dl_debug') === '1') localStorage.setItem('dl_debug', '1');
+      } catch (_) {}
+      window.__DL_DEBUG_INITED__ = true;
+    }
+    const debugOn = (localStorage.getItem('dl_debug') === '1');
+    if (debugOn) {
+      const before = Array.isArray(window.dataLayer) ? window.dataLayer.length : NaN;
+      // eslint-disable-next-line no-console
+      console.log('DL push:', merged);
+      setTimeout(() => {
+        const after = Array.isArray(window.dataLayer) ? window.dataLayer.length : NaN;
+        gtmDiagLog('DL length delta', { before, after, diff: (isFinite(before) && isFinite(after)) ? (after - before) : null });
+      }, 0);
+    }
+
+    // Do not override explicit payload fields (incl. event)
+    window.dataLayer.push(merged);
+  } catch (e) {
+    // Fail-safe: never throw from analytics
+    console.warn('pushDL failed', e);
+  }
+}
+
 // モバイルメニューの制御
 function initMobileMenu() {
     const hamburger = document.querySelector('.hamburger');
@@ -138,6 +207,21 @@ function initInterestCardFlip() {
 document.addEventListener('DOMContentLoaded', () => {
   initInterestCardFlip();
   // （アコーディオンを使うなら）initExpandableContent(); もここで
+});
+
+// GTM presence diagnostics (debug only)
+window.addEventListener('load', () => {
+  try {
+    const debugOn = (localStorage.getItem('dl_debug') === '1');
+    if (!debugOn) return;
+    const ids = Object.keys(window.google_tag_manager || {});
+    gtmDiagLog('BOOT check google_tag_manager containers', ids);
+    if (!window.google_tag_manager) {
+      gtmDiagLog('CAUSE:NO_GTM at load. Likely blocked or snippet missing.');
+    } else if (GTM_EXPECTED_CONTAINER_ID && !window.google_tag_manager[GTM_EXPECTED_CONTAINER_ID]) {
+      gtmDiagLog('CAUSE:ID_MISMATCH at load. Expected container not detected.', { expected: GTM_EXPECTED_CONTAINER_ID, detected: ids });
+    }
+  } catch (_) {}
 });
 
 // スクロール時のヘッダー背景変更
@@ -546,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const favBtn = document.getElementById('favBtn');
   const favCountEl = document.getElementById('favCount');
   const shareBtn = document.getElementById('shareBtn');
-  if (!favBtn || !shareBtn) return;
+  if (!favBtn && !shareBtn) return;
 
   // ページキー（URLパスごとに分ける）
   const pageKeyBase = (location.pathname.replace(/\/$/, '') || '/');
@@ -571,26 +655,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const getFav   = () => localStorage.getItem(favFlagKey) === '1';
   const setFav   = (v) => localStorage.setItem(favFlagKey, v ? '1' : '0');
 
-  // dataLayer helper（最新方針：button_click に集約）
-  function pushDL(obj){
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(Object.assign({
-      event: 'button_click',
-      source: 'datalayer',
-    }, obj));
-  }
+  // dataLayer push はグローバル pushDL を使用（event 名は呼び出し側で指定）
 
   // 初期表示
   const init = () => {
-    favCountEl.textContent = getCount();
-    const f = getFav();
-    favBtn.setAttribute('aria-pressed', f ? 'true' : 'false');
-    if (f) favBtn.title = 'お気に入り済み';
+    if (favBtn && favCountEl) {
+      favCountEl.textContent = getCount();
+      const f = getFav();
+      favBtn.setAttribute('aria-pressed', f ? 'true' : 'false');
+      if (f) favBtn.title = 'お気に入り済み';
+    }
   };
   init();
 
   // お気に入りトグル
-  favBtn.addEventListener('click', () => {
+  if (favBtn) favBtn.addEventListener('click', () => {
     let f = getFav();
     let c = getCount();
 
@@ -600,12 +679,11 @@ document.addEventListener('DOMContentLoaded', () => {
       c = Math.max(0, c - 1);
       setFav(false);
       pushDL({
+        event: 'click_favorite',
         button_id: 'favBtn',
         button_text: 'お気に入り',
         button_category: 'reaction',
-        action: 'unfavorite',
-        page_path: location.pathname,
-        page_title: document.title
+        action: 'unfavorite'
       });
     } else {
       // 登録
@@ -613,12 +691,11 @@ document.addEventListener('DOMContentLoaded', () => {
       c = c + 1;
       setFav(true);
       pushDL({
+        event: 'click_favorite',
         button_id: 'favBtn',
         button_text: 'お気に入り',
         button_category: 'reaction',
-        action: 'favorite',
-        page_path: location.pathname,
-        page_title: document.title
+        action: 'favorite'
       });
     }
     setCount(c);
@@ -628,7 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // シェア押下（既存仕様を踏襲）
-  shareBtn.addEventListener('click', async () => {
+  if (shareBtn) shareBtn.addEventListener('click', async () => {
     const shareData = {
       title: document.title || 'シェア',
       text: 'このページをシェアします',
@@ -640,12 +717,11 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await navigator.share(shareData);
         pushDL({
+          event: 'click_share',
           button_id: 'shareBtn',
           button_text: 'シェア',
           button_category: 'share',
-          action: 'web_share_api',
-          page_path: location.pathname,
-          page_title: document.title
+          action: 'web_share_api'
         });
         return;
       } catch (e) {
@@ -658,12 +734,11 @@ document.addEventListener('DOMContentLoaded', () => {
       await navigator.clipboard.writeText(location.href);
       alert('URLをコピーしました！');
       pushDL({
+        event: 'click_share',
         button_id: 'shareBtn',
         button_text: 'シェア',
         button_category: 'share',
-        action: 'clipboard',
-        page_path: location.pathname,
-        page_title: document.title
+        action: 'clipboard'
       });
     } catch (_) {
       // さらにSNSフォールバック
@@ -680,12 +755,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (options[idx]) {
         window.open(options[idx].href, '_blank', 'noopener,noreferrer');
         pushDL({
+          event: 'click_share',
           button_id: 'shareBtn',
           button_text: 'シェア',
           button_category: 'share',
-          action: options[idx].name,
-          page_path: location.pathname,
-          page_title: document.title
+          action: options[idx].name
         });
       }
     }
@@ -704,15 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const getCount  = (id)=> Number(localStorage.getItem(keyCount(id)) || 0);
   const setCount  = (id,n)=> localStorage.setItem(keyCount(id), String(n));
 
-  // dataLayer helper（②で統一したイベント）
-  function pushDL(payload){
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(Object.assign({
-      event: 'button_click',
-      source: 'datalayer',
-      button_category: 'interest_like'
-    }, payload));
-  }
+  // dataLayer push はグローバル pushDL を使用
 
   // ★ 裏面にあるボタンのみを対象にするセレクタ
   document.querySelectorAll('.interest-card .card-back .btn-like[data-like-id]').forEach((btn)=>{
@@ -735,13 +801,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setLiked(likeId,false); setCount(likeId,count);
         btn.setAttribute('aria-pressed','false');
         if (countEl) countEl.textContent = count;
-        pushDL({ button_id: likeId, button_text: 'カードいいね', action: 'unlike' });
+        pushDL({ event: 'click_like', button_id: likeId, button_text: 'カードいいね', button_category: 'reaction', action: 'unlike' });
       } else {
         liked = true; count = count + 1;
         setLiked(likeId,true); setCount(likeId,count);
         btn.setAttribute('aria-pressed','true');
         if (countEl) countEl.textContent = count;
-        pushDL({ button_id: likeId, button_text: 'カードいいね', action: 'like' });
+        pushDL({ event: 'click_like', button_id: likeId, button_text: 'カードいいね', button_category: 'reaction', action: 'like' });
       }
     });
 
@@ -755,27 +821,80 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 
-// ★ お気に入り（黄色スター）
-document.getElementById('favBtn')?.addEventListener('click', () => {
-  const isOn = (document.getElementById('favBtn').getAttribute('aria-pressed') === 'true');
-  dlPushButtonClick({
-    button_id: 'favBtn',
-    button_text: 'お気に入り',
-    button_category: 'reaction',
-    action: isOn ? 'unfavorite' : 'favorite',
-    page_path: location.pathname,
-    page_title: document.title
-  });
+// =============================
+// Analytics: Scroll depth & Engagement
+// =============================
+function initScrollDepth() {
+  const thresholds = [25, 50, 75, 100];
+  const fired = new Set();
+
+  const calcPercent = () => {
+    const doc = document.documentElement;
+    const body = document.body;
+    const scrollY = typeof window.pageYOffset === 'number' ? window.pageYOffset : Math.max(doc.scrollTop, body.scrollTop);
+    const viewportH = window.innerHeight || doc.clientHeight;
+    const fullH = Math.max(
+      body.scrollHeight, doc.scrollHeight,
+      body.offsetHeight, doc.offsetHeight,
+      body.clientHeight, doc.clientHeight
+    );
+    let pct = Math.round(((scrollY + viewportH) / Math.max(1, fullH)) * 100);
+    return Math.max(0, Math.min(100, pct));
+  };
+
+  const check = () => {
+    const pct = calcPercent();
+    for (const t of thresholds) {
+      if (!fired.has(t) && pct >= t) {
+        fired.add(t);
+        pushDL({ event: 'scroll_depth', scroll_percent: t });
+        gtmDiagLog('SCROLL_DEPTH fired', { percent: t, calc: pct });
+      }
+    }
+  };
+
+  // Throttle the scroll/resize handler; passive for performance
+  const onScroll = throttle(check, 200);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  window.addEventListener('load', check, { once: true });
+  // Initial check in case user lands mid-page or short pages
+  setTimeout(check, 0);
+
+  // Bottom sentinel to guarantee 100%
+  try {
+    const sentinel = document.createElement('div');
+    sentinel.setAttribute('data-scroll-sentinel', '');
+    sentinel.style.cssText = 'position:relative;height:1px;width:100%;';
+    document.body.appendChild(sentinel);
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !fired.has(100)) {
+          fired.add(100);
+          pushDL({ event: 'scroll_depth', scroll_percent: 100 });
+          gtmDiagLog('SCROLL_DEPTH sentinel 100% fired', {});
+          obs.disconnect();
+        }
+      });
+    }, { root: null, threshold: 0, rootMargin: '0px 0px 0px 0px' });
+    io.observe(sentinel);
+  } catch (_) {
+    // noop: IO not supported
+  }
+}
+
+function initEngagementPing() {
+  let elapsedSec = 0;
+  setInterval(() => {
+    elapsedSec += 30;
+    pushDL({ event: 'engagement_ping', elapsed_sec: elapsedSec });
+  }, 30000);
+}
+
+// Initialize analytics timers and scroll tracking
+document.addEventListener('DOMContentLoaded', () => {
+  initScrollDepth();
+  initEngagementPing();
 });
 
-// 🔗 シェア（Web Share / クリップボード / SNSフォールバック いずれでも）
-document.getElementById('shareBtn')?.addEventListener('click', () => {
-  dlPushButtonClick({
-    button_id: 'shareBtn',
-    button_text: 'シェア',
-    button_category: 'share',
-    action: 'click',
-    page_path: location.pathname,
-    page_title: document.title
-  });
-});
+// （analytics: duplicative handlers removed）
