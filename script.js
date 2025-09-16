@@ -755,15 +755,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 
-// === 共通: DataLayer push helper（KPI級用） ===
-function dlPushButtonClick(detail){
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push(Object.assign({
-    event: 'button_click',   // ← GTMで拾うカスタムイベント名を統一
-    source: 'datalayer'      // ← 属性方式との住み分けフラグ（超重要）
-  }, detail));
-}
-
 // ★ お気に入り（黄色スター）
 document.getElementById('favBtn')?.addEventListener('click', () => {
   const isOn = (document.getElementById('favBtn').getAttribute('aria-pressed') === 'true');
@@ -788,75 +779,3 @@ document.getElementById('shareBtn')?.addEventListener('click', () => {
     page_title: document.title
   });
 });
-
-// ===== 1) DataLayer 初期化 =====
-window.dataLayer = window.dataLayer || [];
-
-// ===== 2) 訪問回数・ページビュー数をカウント（localStorage）=====
-let visitCount = parseInt(localStorage.getItem('visit_count')) || 0;
-visitCount++;
-localStorage.setItem('visit_count', String(visitCount));
-
-let pageViews = parseInt(localStorage.getItem('page_views')) || 0;
-pageViews++;
-localStorage.setItem('page_views', String(pageViews));
-
-// ===== 3) ページ表示時の page_data を即送信 =====
-dataLayer.push({
-  event: 'page_data',
-  visit_count: visitCount,
-  page_views: pageViews,
-  referrer: document.referrer || '',
-  page_path: window.location.pathname,
-  page_title: document.title,
-  source: 'datalayer',
-});
-
-// ===== 4) 滞在時間（セッション秒）を送る =====
-const sessionStart = Date.now();
-let sessionEndSent = false; // 重複送信ガード
-
-function pushSessionEnd() {
-  if (sessionEndSent) return;
-  sessionEndSent = true;
-
-  const duration = Math.floor((Date.now() - sessionStart) / 1000); // 秒
-  dataLayer.push({
-    event: 'session_end',
-    session_duration: duration,
-    page_path: window.location.pathname,
-    page_title: document.title,
-    referrer: document.referrer || '',
-    visit_count: visitCount,
-    source: 'datalayer',
-  });
-}
-
-// PC: タブ閉じ/リロード
-window.addEventListener('beforeunload', pushSessionEnd);
-// モバイルSafari等: バックグラウンド遷移
-document.addEventListener('visibilitychange', function () {
-  if (document.visibilityState === 'hidden') pushSessionEnd();
-});
-// ページ ライフサイクル API
-window.addEventListener('pagehide', pushSessionEnd);
-
-// ===== 5) 重要ボタンクリック（例：お気に入り）=====
-(function () {
-  const likeBtn = document.getElementById('likeBtn');
-  if (!likeBtn) return;
-
-  likeBtn.addEventListener('click', function () {
-    dataLayer.push({
-      event: 'button_click',
-      button_id: 'likeBtn',
-      button_text: 'お気に入り',
-      button_category: 'favorite',
-      action: 'click',
-      page_path: window.location.pathname,
-      page_title: document.title,
-      visit_count: visitCount,
-      source: 'datalayer',
-    });
-  });
-})();
