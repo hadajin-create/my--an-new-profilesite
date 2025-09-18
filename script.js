@@ -562,3 +562,30 @@ function initReactions() {
   }
 }
 
+const likeBtn = document.getElementById("likeBtn");
+const likeCountEl = document.getElementById("likeCount");
+
+// localStorageから取得
+let liked = localStorage.getItem("liked") === "1";
+let count = Number(localStorage.getItem("like_count") || 0);
+
+// 初期表示
+likeCountEl.textContent = count;
+if (liked) {
+  likeBtn.disabled = true; // いいね済みなら押せない
+}
+
+likeBtn.addEventListener("click", () => {
+  if (liked) return; // すでにいいね済みなら無効
+
+  count++;
+  liked = true;
+
+  // 保存
+  localStorage.setItem("like_count", count);
+  localStorage.setItem("liked", "1");
+
+  // 表示更新
+  likeCountEl.textContent = count;
+  likeBtn.disabled = true;
+});
