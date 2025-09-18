@@ -453,4 +453,112 @@ document.addEventListener('DOMContentLoaded', function () {
   initSmoothAnchorScroll();
   initPageSpecificFeatures();
   initStrengthsExpand();
+
+  initReactions();
 });
+
+// ==== Reactions (Favorite / Like / Share) – UIだけ復活（計測しない版） ====
+function initReactions() {
+  // ====== お気に入り（ページ全体のボタン） ======
+  const favBtn = document.getElementById('favBtn');
+  const favCountEl = document.getElementById('favCount');
+
+  // ページごとのキー（URLパス単位）
+  const pageKey = (location.pathname.replace(/\/$/, '') || '/');
+  const favCountKey = `fav:${pageKey}:count`;
+  const favFlagKey  = `fav:${pageKey}:fav`;
+
+  const getCount = () => Number(localStorage.getItem(favCountKey) || 0);
+  const setCount = (n) => localStorage.setItem(favCountKey, String(n));
+  const getFav   = () => localStorage.getItem(favFlagKey) === '1';
+  const setFav   = (v) => localStorage.setItem(favFlagKey, v ? '1' : '0');
+
+  // 初期表示
+  if (favBtn && favCountEl) {
+    favCountEl.textContent = getCount();
+    const f = getFav();
+    favBtn.setAttribute('aria-pressed', f ? 'true' : 'false');
+    favBtn.title = f ? 'お気に入り済み' : '';
+  }
+
+  // クリックでトグル
+  if (favBtn && favCountEl) {
+    favBtn.addEventListener('click', () => {
+      let f = getFav();
+      let c = getCount();
+      if (f) { // 解除
+        f = false; c = Math.max(0, c - 1);
+        setFav(false);
+      } else { // 登録
+        f = true; c = c + 1;
+        setFav(true);
+      }
+      setCount(c);
+      favBtn.setAttribute('aria-pressed', f ? 'true' : 'false');
+      favBtn.title = f ? 'お気に入り済み' : '';
+      favCountEl.textContent = c;
+    });
+  }
+
+  // ====== カード裏面の「いいね」ボタン（.btn-like[data-like-id]） ======
+  document.querySelectorAll('.interest-card .card-back .btn-like[data-like-id]').forEach((btn) => {
+    const likeId = btn.getAttribute('data-like-id');
+    const countEl = btn.querySelector('.like-count');
+
+    const keyLiked = (id) => `like:${pageKey}:${id}:liked`;
+    const keyCount = (id) => `like:${pageKey}:${id}:count`;
+    const getLiked = (id) => localStorage.getItem(keyLiked(id)) === '1';
+    const setLiked = (id, v) => localStorage.setItem(keyLiked(id), v ? '1' : '0');
+    const getLikeCount = (id) => Number(localStorage.getItem(keyCount(id)) || 0);
+    const setLikeCount = (id, n) => localStorage.setItem(keyCount(id), String(n));
+
+    // 初期表示
+    const liked = getLiked(likeId);
+    btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+    if (countEl) countEl.textContent = getLikeCount(likeId);
+
+    // クリック（カード反転等に影響しないよう伝播停止）
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let liked = getLiked(likeId);
+      let count = getLikeCount(likeId);
+      if (liked) {
+        liked = false; count = Math.max(0, count - 1);
+        setLiked(likeId, false);
+      } else {
+        liked = true; count = count + 1;
+        setLiked(likeId, true);
+      }
+      setLikeCount(likeId, count);
+      btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      if (countEl) countEl.textContent = count;
+    });
+
+    // キーボード対応
+    if (!btn.hasAttribute('tabindex')) btn.setAttribute('tabindex', '0');
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+    });
+  });
+
+  // ====== シェアボタン（#shareBtn） ======
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const shareData = { title: document.title || 'シェア', text: document.title || '', url: location.href };
+      // Web Share API
+      if (navigator.share) {
+        try { await navigator.share(shareData); return; } catch (e) { /* キャンセル等はフォールバック */ }
+      }
+      // フォールバック：URLコピー
+      try {
+        await navigator.clipboard.writeText(location.href);
+        alert('URLをコピーしました！');
+      } catch (_) {
+        // さらにどうしてもコピーできない場合は簡易プロンプト
+        prompt('このURLをコピーしてください', location.href);
+      }
+    });
+  }
+}
+
