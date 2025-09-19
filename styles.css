@@ -288,6 +288,13 @@ body {
   box-shadow: 0 5px 20px rgba(0,0,0,0.1); 
 }
 
+.card {
+  height: 400px; /* 表面の高さに合わせて固定 */
+}
+.card__face {
+  height: 100%;
+}
+
 /* 裏面は180度回しておく */
 .card-back {
   transform: rotateY(180deg);
