@@ -1314,3 +1314,8 @@ html {
     font-size: 1em;
   }
 }
+
+#like-btn,
+#share-btn {
+  display: none !important;
+}
