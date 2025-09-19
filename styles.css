@@ -248,12 +248,12 @@ body {
     background: #faf8f8;
 }
 
-/* カード本体に3Dの奥行きを付与 */
 .interest-card {
   perspective: 1000px;
-  position: relative; 
-  height: 360px;  
-  width: 360px;   
+  position: relative;
+  width: 360px;
+  max-width: 92vw;   /* 既存の指定もOK */
+  height: 360px;     /* ここが“基準の高さ” */
 }
 
 /* 中身を回転させるラッパー */
@@ -270,37 +270,27 @@ body {
   transform: rotateY(180deg);
 }
 
-/* 表面 / 裏面（共通） */
+/* 表面 / 裏面（共通）※これだけ残す */
 .card-front,
 .card-back {
-  cursor: pointer;
   position: absolute;
-  inset: 0;                    
-  backface-visibility: hidden;  
-  border-radius: 15px;
-  background: #fff;
+  inset: 0;
+  height: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;    
+  justify-content: center;   /* 内容中央寄せでOK。上下分けたいなら space-between */
   padding: 1.25rem;
   text-align: center;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.1); 
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden; /* iOS/Safari 対策 */
+  overflow: hidden; /* 中身がはみ出して見た目の高さがズレるのを防ぐ */
 }
-
-.card {
-  height: 400px; /* 表面の高さに合わせて固定 */
-}
-.card__face {
-  height: 100%;
-}
-
-/* 裏面は180度回しておく */
-.card-back {
-  transform: rotateY(180deg);
-  background: white ;
-  color: #333;
-}
+.card-back { transform: rotateY(180deg); }
 
 .interest-card:hover {
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15); 
@@ -333,13 +323,6 @@ body {
   }
 }
 
-/* カード幅の最適化（任意：小画面でのはみ出し防止） */
-.interest-card {
-  width: 360px;
-  max-width: 92vw; /* スマホでの横はみ出しを抑える */
-  height: 360px;
-}
-
 .interest-card h3 {
     font-size: 1.5rem;
     color: #333;
@@ -361,12 +344,6 @@ body {
   border-radius: 12px;
   display: block;
   margin: 0 auto 0.75rem; 
-}
-
-/* 裏面を絶対配置の基準にする */
-.interest-card .card-back {
-  position: relative;           /* ←これが右下固定の基準 */
-  padding-bottom: 56px;         /* ←ボタン分の余白（重なり防止・任意値） */
 }
 
 /* いいねボタン（裏面右下固定） */
